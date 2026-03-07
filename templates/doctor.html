@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Medicare</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', 'Pyidaungsu', sans-serif; }
+        
+        /* Navigation Bar */
+        .navbar { background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 15px 0; }
+        .navbar-brand { font-weight: bold; color: #0d6efd !important; font-size: 24px; }
+        .nav-link { color: #2c3e50 !important; font-weight: 500; margin: 0 10px; }
+        .nav-link:hover, .nav-link.active { color: #0d6efd !important; }
+        .logout-btn { border: 1px solid #dc3545; color: #dc3545 !important; border-radius: 20px; padding: 5px 20px !important; transition: 0.3s; }
+        .logout-btn:hover { background: #dc3545; color: white !important; }
+
+        /* Hero Banner */
+        .hero-banner { background: linear-gradient(135deg, #0d6efd, #2c3e50); color: white; padding: 50px 0; text-align: center; margin-bottom: 40px; }
+
+        /* Stat Cards */
+        .stat-card { border: none; border-radius: 15px; background: white; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; text-align: center; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        
+        /* Table Area */
+        .table-card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+
+        /* Modal Styles */
+        .modal-header { background: #0d6efd; color: white; border-radius: 15px 15px 0 0; }
+        
+        /* Card အကြွအလှများနှင့် Gradient များ */
+.doc-stat-card {
+    border: none;
+    border-radius: 20px;
+    padding: 25px;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.doc-stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+/* ဆရာဝန်အတွက် အရောင်အသစ်များ */
+.bg-gradient-teal { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); } /* စုစုပေါင်း */
+.bg-gradient-gold { background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%); } /* စောင့်ဆိုင်းဆဲ */
+.bg-gradient-emerald { background: linear-gradient(135deg, #0575E6 0%, #021B79 100%); } /* ပြီးမြောက် */
+
+/* Icon လေးများ */
+.doc-stat-icon {
+    position: absolute;
+    right: 15px;
+    bottom: 10px;
+    font-size: 3.5rem;
+    opacity: 0.15;
+}
+
+/* ဇယား (Table) အား ပိုလှအောင် ပြင်ဆင်ခြင်း */
+.custom-table-card {
+    background: white;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    padding: 20px;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #eef0f2;
+    color: #495057;
+    font-weight: 600;
+}
+
+/* Search Box ကို ပိုမိုလှပပြီး ကြွစေမည့် Style */
+.search-wrapper {
+    max-width: 450px;
+    margin: 20px auto 30px; /* Center ကျစေရန် */
+}
+
+.search-box-elevated {
+    background: #ffffff;
+    border-radius: 50px;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06); /* အကြွအရိပ် */
+    border: 2px solid transparent;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.search-box-elevated:focus-within {
+    transform: translateY(-5px); /* ရိုက်နေစဉ် ပိုကြွလာစေရန် */
+    box-shadow: 0 15px 35px rgba(13, 110, 253, 0.12);
+    border-color: #0d6efd;
+}
+
+.search-box-elevated i {
+    color: #0d6efd;
+    font-size: 1.2rem;
+    margin-right: 12px;
+}
+
+.search-box-elevated .form-control {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    font-size: 1rem;
+    color: #333;
+}
+
+.search-box-elevated .form-control:focus {
+    outline: none;
+}
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/doctor">MEDICARE</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link active" href="/doctor">ပင်မစာမျက်နှာ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/doctor/my_patients">ကျွန်ုပ်၏လူနာများ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/doctor/manage_schedule">အချိန်ဇယားပြင်ဆင်ရန်</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="me-3 text-muted">ဒေါက်တာ {{ session['full_name'] }}</span>
+                    <a href="/logout" class="logout-btn nav-link">ထွက်ရန်</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-banner">
+        <div class="container">
+            <h1 class="fw-bold mb-2">မင်္ဂလာပါ၊ ဒေါက်တာ {{ session['full_name'] }}</h1>
+            <p class="opacity-75">ယနေ့အတွက် လူနာရက်ချိန်းများနှင့် ဆေးရုံလုပ်ငန်းစဉ်များကို ဤနေရာမှ စီမံနိုင်ပါသည်။</p>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+    <div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <a href="{{ url_for('doctor_appointments') }}" class="text-decoration-none">
+            <div class="doc-stat-card bg-gradient-teal">
+                <i class="fas fa-calendar-check doc-stat-icon"></i>
+                <h6 class="text-uppercase opacity-75">ယနေ့စုစုပေါင်းရက်ချိန်း</h6>
+                <h2 class="fw-bold">{{ total }}</h2>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-4">
+        <a href="{{ url_for('pending_patients') }}" class="text-decoration-none">
+            <div class="doc-stat-card bg-gradient-gold">
+                <i class="fas fa-user-clock doc-stat-icon"></i>
+                <h6 class="text-uppercase opacity-75">ယနေ့စောင့်ဆိုင်းဆဲလူနာ</h6>
+                <h2 class="fw-bold">{{ pending }}</h2>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-4">
+        <a href="{{ url_for('completed_patients') }}" class="text-decoration-none">
+            <div class="doc-stat-card bg-gradient-emerald">
+                <i class="fas fa-check-double doc-stat-icon"></i>
+                <h6 class="text-uppercase opacity-75">ယနေ့ကြည့်ရှုပြီးလူနာ</h6>
+                <h2 class="fw-bold">{{ completed }}</h2>
+            </div>
+        </a>
+    </div>
+</div>
+    </div>
+
+    <div class="custom-table-card">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <h5 class="fw-bold m-0"><i class="fas fa-list-ul me-2 text-primary"></i>လူနာရက်ချိန်းများ</h5>
+        </div>
+        
+        <div class="col-md-6 d-flex justify-content-md-end">
+            <div class="search-wrapper w-100">
+                <div class="search-box-elevated">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="patientSearch" class="form-control" 
+                           placeholder="ယနေ့လူနာအမည်ဖြင့် ရှာဖွေပါ..." 
+                           onkeyup="searchPatients()">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>လူနာအမည်</th>
+                            <th>ရက်စွဲနှင့် အချိန်</th>
+                            <th>အခြေအနေ</th>
+                            <th>လုပ်ဆောင်ချက်</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in appointments %}
+                        <tr class="patient-row">
+                            <td class="fw-bold text-dark">{{ appt['patient_name'] }}</td>
+                            <td class="text-muted">{{ appt['booking_time'] }}</td>
+                            <td>
+                                {% if appt['status'] == 'booked' %}
+                                    <span class="badge bg-primary">ဘွတ်ကင်လုပ်ပြီး</span>
+                                {% elif appt['status'] == 'completed' %}
+                                    <span class="badge bg-success">ပြီးမြောက်</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ appt['status'] }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+    {% if appt['status'] != 'completed' %}
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#recordModal{{ appt['id'] }}">
+            <i class="fas fa-edit me-1"></i> ကြည့်ရှုမည်
+        </button>
+
+        <a href="{{ url_for('move_to_emergency', appt_id=appt['id']) }}" 
+           class="btn btn-sm btn-danger shadow-sm"
+           onclick="return confirm('ဒီလူနာကို အရေးပေါ်အဖြစ် လွှဲပြောင်းမှာ သေချာပါသလား?')">
+            <i class="fas fa-ambulance"></i>
+        </a>
+    </div>
+    {% else %}
+    <button class="btn btn-sm btn-outline-secondary disabled">
+        <i class="fas fa-check-double me-1"></i> ကြည့်ပြီး
+    </button>
+    {% endif %}
+</td>
+                        </tr>
+
+                        <div class="modal fade" id="recordModal{{ appt['id'] }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"><i class="fas fa-user-md me-2"></i> ဆေးမှတ်တမ်း ရေးသားရန်</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form action="/complete_appointment/{{ appt['id'] }}" method="POST">
+                                        <div class="modal-body">
+                                            <p class="text-muted small mb-3">လူနာအမည် - <b>{{ appt['patient_name'] }}</b></p>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">ရောဂါအမည် (Diagnosis)</label>
+                                                <input type="text" name="diagnosis" class="form-control" placeholder="ဥပမာ - အစာအိမ်ရောင်ခြင်း" required>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">ဆေးညွှန်းနှင့် လမ်းညွှန်ချက် (Prescription)</label>
+                                                <textarea name="treatment" class="form-control" rows="4" placeholder="သောက်ရမည့်ဆေးနှင့် အစာရှောင်ရန်များ ရေးပါ..." required></textarea>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="fw-bold text-primary">ဆရာဝန်၏ အကြံပြုချက် (Recommendation)</label>
+                                                <textarea name="recommendation" class="form-control" rows="2" placeholder="အထူးအကြံပြုချက်ရှိပါက ရေးရန်..."></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">ပိတ်မည်</button>
+                                            <button type="submit" class="btn btn-primary">မှတ်တမ်းသိမ်း၍ အတည်ပြုမည်</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% endfor %}
+                        <tr id="noResultsRow" style="display: none;">
+    <td colspan="4" class="text-center py-4 text-muted">
+        <i class="fas fa-search-minus fa-2x d-block mb-2 opacity-50"></i>
+        ရိုက်နှိပ်ထားသော အမည်ဖြင့် လူနာရှာမတွေ့ပါ။
+    </td>
+</tr>
+
+                        {% if not appointments %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-calendar-times fa-3x d-block mb-3 opacity-25"></i>
+                                ယနေ့အတွက် ရက်ချိန်းမရှိသေးပါ။
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    function searchPatients() {
+        const input = document.getElementById("patientSearch");
+        const filter = input.value.toLowerCase().trim();
+        const rows = document.querySelectorAll(".patient-row");
+        const noResultsRow = document.getElementById("noResultsRow");
+        let found = false;
+
+        rows.forEach(row => {
+            const nameColumn = row.getElementsByTagName("td")[0];
+            if (nameColumn) {
+                const textValue = nameColumn.textContent || nameColumn.innerText;
+                if (textValue.toLowerCase().indexOf(filter) > -1) {
+                    row.style.display = "";
+                    found = true;
+                } else {
+                    row.style.display = "none";
+                }
+            }
+        });
+
+        // ရှာဖွေမှုမရှိပါက စာသားဖော်ပြရန်
+        if (found || filter === "") {
+            noResultsRow.style.display = "none";
+        } else {
+            noResultsRow.style.display = "";
+        }
+    }
+</script>
+</body>
+</html>

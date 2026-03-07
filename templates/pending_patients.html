@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare - စောင့်ဆိုင်းဆဲလူနာများ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Pyidaungsu', sans-serif; }
+        .card { border-radius: 12px; border: none; overflow: hidden; }
+        .header-blue { background-color: #007bff; color: white; }
+        /* အလှည့်နံပါတ်ကို စက်ဝိုင်းပုံစံလေးဖြင့် ပိုထင်ရှားစေရန် */
+        .token-circle {
+            background-color: #343a40;
+            color: white;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="header-blue p-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-users-viewfinder me-2"></i>{{ title }}</h5>
+            <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-sm btn-light border">
+                <i class="fas fa-home"></i> Dashboard သို့ပြန်ရန်
+            </a>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 100px;">အလှည့်</th> <th>လူနာအမည်</th>
+                            <th>ရက်စွဲနှင့် အချိန်</th>
+                            <th>အခြေအနေ</th>
+                            <th>လုပ်ဆောင်ချက်</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in appointments %}
+                        <tr>
+                            <td>
+                                <div class="token-circle">{{ loop.index }}</div>
+                            </td>
+                            <td class="text-start ps-4">
+                                <strong>{{ appt.patient_name }}</strong>
+                            </td>
+                            <td>{{ appt.booking_time }}</td>
+                            <td>
+                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">စောင့်ဆိုင်းဆဲ</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary btn-sm px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#checkModal{{ appt.id }}">
+                                    <i class="fas fa-stethoscope"></i> ကြည့်ရှုမည်
+                                </button>
+                            </td>
+                        </tr>
+
+                        <div class="modal fade" id="checkModal{{ appt.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content shadow-lg border-0">
+                                    <form action="{{ url_for('complete_appointment', id=appt.id) }}" method="POST">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title fw-bold">အလှည့်နံပါတ် ({{ loop.index }}) - {{ appt.patient_name }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">ရောဂါရှာဖွေချက်</label>
+                                                <textarea name="diagnosis" class="form-control" rows="2" required placeholder="ရောဂါအမည်..."></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">ဆေးညွှန်း</label>
+                                                <textarea name="treatment" class="form-control" rows="3" required placeholder="သောက်ရမည့်ဆေးများ..."></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-0">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ပိတ်မည်</button>
+                                            <button type="submit" class="btn btn-primary px-4 shadow-sm">သိမ်းမည်</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">စောင့်ဆိုင်းနေသည့် လူနာမရှိသေးပါ။</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

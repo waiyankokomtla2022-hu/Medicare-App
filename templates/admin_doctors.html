@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ဆရာဝန်များ စီမံရန် - Medicare</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
+    <style>
+        body { 
+            background-color: #f4f7f6; 
+            font-family: 'Segoe UI', 'Pyidaungsu', sans-serif; 
+        }
+
+        /* အပေါ် Navigation Bar */
+        .navbar {
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px 0;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #0d6efd !important;
+            font-size: 24px;
+        }
+        .nav-link {
+            color: #2c3e50 !important;
+            font-weight: 500;
+            margin: 0 10px;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #0d6efd !important;
+        }
+        .logout-btn {
+            border: 1px solid #dc3545;
+            color: #dc3545 !important;
+            border-radius: 20px;
+            padding: 5px 20px !important;
+            transition: 0.3s;
+        }
+        .logout-btn:hover {
+            background: #dc3545;
+            color: white !important;
+        }
+
+        /* Banner ပိုင်း */
+        .hero-banner {
+            background: linear-gradient(135deg, #0d6efd, #2c3e50);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* Table Card Style */
+        .card { 
+            border: none; 
+            border-radius: 15px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .table thead {
+            background-color: #f8f9fa;
+        }
+
+        .modal-content { 
+            border-radius: 15px; 
+            border: none; 
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/admin">MEDICARE</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/admin">ပင်မစာမျက်နှာ</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/admin/doctors">ဆရာဝန်များ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/admin/patients">လူနာများ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/admin/appointments">ရက်ချိန်းများ</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <a href="/logout" class="logout-btn nav-link">ထွက်ရန်</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-banner">
+        <div class="container">
+            <h2 class="fw-bold"><i class="fas fa-user-md me-2"></i>ဆရာဝန်များ စီမံခန့်ခွဲခြင်း</h2>
+            <p class="opacity-75">ဆေးရုံရှိ ဆရာဝန်စာရင်းများကို ဤနေရာတွင် အသစ်ထည့်ခြင်းနှင့် ပြင်ဆင်ခြင်းများ ပြုလုပ်နိုင်ပါသည်။</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">ဆရာဝန်စာရင်း</h4>
+            <button class="btn btn-primary px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+                <i class="fas fa-plus me-2"></i>ဆရာဝန်အသစ်ထည့်ရန်
+            </button>
+        </div>
+
+        <div class="card p-4 mb-5">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>စဉ်</th> <th>အမည်</th>
+                            <th>အထူးပြု</th>
+                            <th>အီးမေးလ်</th>
+                            <th>ဖုန်း</th>
+                            <th>မြို့နယ်</th>
+                            <th>လုပ်ဆောင်ချက်</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in doctors %}
+                        <tr>
+                            <td class="fw-bold">{{ loop.index }}</td>
+                            
+                            <td class="fw-bold">{{ doc['full_name'] }}</td>
+                            <td><span class="badge bg-info text-dark">{{ doc['specialty'] or 'General' }}</span></td>
+                            <td>{{ doc['email'] }}</td>
+                            <td>{{ doc['phone'] or '-' }}</td>
+                            <td>{{ doc['city'] or '-' }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-info me-1"><i class="fas fa-edit"></i></button>
+                                
+                                <a href="/admin/delete_doctor/{{ doc['id'] }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('ဤဆရာဝန်ကို စာရင်းမှ ပယ်ဖျက်ရန် သေချာပါသလား?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addDoctorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">ဆရာဝန်အသစ် မှတ်ပုံတင်ရန်</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/admin/add_doctor" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">အမည်အပြည့်အစုံ</label>
+                            <input type="text" name="full_name" class="form-control" placeholder="ဥပမာ - ဒေါက်တာ အောင်ကျော်" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">အီးမေးလ် လိပ်စာ</label>
+                            <input type="email" name="email" class="form-control" placeholder="doctor@gmail.com" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">အထူးပြုဘာသာရပ်</label>
+                                <input type="text" name="specialty" class="form-control" placeholder="e.g. Cardiology" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">ဖုန်းနံပါတ်</label>
+                                <input type="text" name="phone" class="form-control" placeholder="09xxxxxxx" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">မြို့နယ်</label>
+                            <input type="text" name="city" class="form-control" placeholder="ရန်ကုန်">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Login Password သတ်မှတ်ပါ</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">မလုပ်တော့ပါ</button>
+                        <button type="submit" class="btn btn-primary">စာရင်းသွင်းမည်</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

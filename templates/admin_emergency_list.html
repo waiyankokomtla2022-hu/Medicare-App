@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emergency Patients</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    /* Overlay အမှောင်လွှာကို ဖယ်ရှားခြင်း */
+    .modal-backdrop {
+        display: none !important;
+    }
+
+    body {
+        background-color: #f8f9fa !important; /* နောက်ခံကို ပြန်လင်းစေရန် */
+        filter: none !important; /* Blur ဖြစ်နေတာကို ဖြုတ်ရန် */
+    }
+
+    /* Table ကတ်ကို ပိုမို ကြည်လင်တောက်ပစေရန် */
+    .card {
+        background-color: white !important;
+        opacity: 1 !important;
+        border: none;
+    }
+</style>
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>🚨 အရေးပေါ်လူနာစာရင်း</h2>
+        <a href="/admin" class="btn btn-secondary">Dashboard သို့ပြန်ရန်</a>
+    </div>
+    
+    <div class="card shadow">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-danger">
+                    <tr>
+                        <th class="ps-4">လူနာအမည်</th>
+                        <th>အခြေအနေ</th>
+                        <th>အချိန်</th>
+                        <th>တာဝန်ကျဆရာဝန်</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if emergencies %}
+                        {% for row in emergencies %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-danger">{{ row['patient_name'] }}</div>
+                                <small class="text-muted">{{ row['phone'] }}</small>
+                            </td>
+                            <td><span class="badge bg-danger">Emergency</span></td>
+                            <td>{{ row['booking_time'] }}</td>
+                            <td>Dr. {{ row['doctor_name'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                လက်ရှိ အရေးပေါ်လူနာစာရင်း မရှိသေးပါ။
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Medicare</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { background-color: #f0f3f7; font-family: 'Segoe UI', 'Pyidaungsu', sans-serif; }
+        
+        /* Navigation (သင့်မူရင်း Style) */
+        .navbar { background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 15px 0; border-bottom: 2px solid #0d6efd; }
+        .navbar-brand { font-weight: bold; color: #0d6efd !important; font-size: 24px; }
+        .nav-link { color: #2c3e50 !important; font-weight: 500; margin: 0 10px; }
+        .logout-btn { border: 2px solid #dc3545; color: #dc3545 !important; border-radius: 20px; padding: 5px 20px !important; transition: 0.3s; }
+        .logout-btn:hover { background: #dc3545; color: white !important; }
+
+        /* Hero Banner (သင့်မူရင်း Style) */
+        .hero-section {
+            background: linear-gradient(135deg, #0d6efd 0%, #1e293b 100%);
+            color: white; padding: 70px 0; text-align: center; margin-bottom: -60px;
+            box-shadow: inset 0 -10px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Stat Cards (သင့်မူရင်း Style) */
+       .stat-card { 
+    border: none; 
+    border-radius: 20px; 
+    padding: 25px 30px;  /* ဘယ်ညာ Padding ကို တိုးလိုက်ခြင်းက အလျားကို လှစေပါသည် */
+    color: white; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    transition: all 0.3s ease; 
+    cursor: pointer;
+
+    /* အလျားရှည်ရှည် ကြည့်ကောင်းသော အရွယ်အစား */
+    width: 260px;        /* အလျားကို ၂၆၀ ထိ တိုးလိုက်ပါသည် */
+    height: 120px;       /* အမြင့်ကို ၁၂၀ ထားခြင်းဖြင့် အချိုးကျစေပါသည် */
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start; /* စာသားများကို ဘယ်ဘက်ပြန်ကပ်ပါသည် */
+    text-align: left;
+}
+
+.stat-card h1 {
+    font-size: 2.2rem;   /* ကိန်းဂဏန်းကို ထင်ရှားစေပါသည် */
+    font-weight: 800;
+    margin: 0;
+}
+
+.stat-card small {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    opacity: 0.9;
+}
+        .stat-card:hover { transform: translateY(-12px) scale(1.02); box-shadow: 0 20px 45px rgba(0,0,0,0.25); }
+        .bg-blue { background: linear-gradient(135deg, #007bff, #00d2ff); }
+        .bg-green { background: linear-gradient(135deg, #28a745, #11998e); }
+        .bg-purple { background: linear-gradient(135deg, #6f42c1, #a445b2); }
+        .bg-red { background: linear-gradient(135deg, #e74c3c, #ff7675); }
+
+        /* Dashboard Boxes အသစ်များ */
+        .visual-container { background: white; border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px; }
+
+        /* Table Container (သင့်မူရင်း Style အရှည်ကြီးအတိုင်း) */
+        .table-container { 
+            background: #e2e8f0; 
+            border-radius: 30px; 
+            padding: 40px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1); 
+            border: 1px solid rgba(255,255,255,0.3);
+            width: 100%; /* အလျားအပြည့်ဖြစ်အောင် ထည့်ပါ */
+            margin-top: 0 !important; /* အပေါ်က Stat Cards တွေနဲ့ ကပ်သွားအောင် */
+        }
+        .table thead th { border: none; color: #475569; font-weight: 800; padding: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .table tbody tr { background: #ffffff; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-radius: 18px; transition: 0.3s; }
+        .table tbody tr:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); background: #fdfdfd; }
+        .table tbody td { border: none; padding: 22px 15px; vertical-align: middle; font-weight: 500; }
+        .table tbody tr td:first-child { border-radius: 18px 0 0 18px; }
+        .table tbody tr td:last-child { border-radius: 0 18px 18px 0; }
+
+        .index-box { 
+            width: 40px; height: 40px; background: #334155; color: white; 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 12px; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .status-badge { 
+            padding: 10px 20px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; 
+            background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        #patientSearch:focus {
+    box-shadow: none;
+    outline: none;
+    background-color: #f8f9fa;
+}
+.input-group:focus-within {
+    border: 1px solid #0d6efd;
+}
+
+/* ဆရာဝန်စာရင်းကို အမြင့်ကန့်သတ်ပြီး Scroll ထည့်ခြင်း */
+.doctor-list-container {
+    max-height: 300px; /* သင်နှစ်သက်သလို အမြင့်ကို ချိန်ညှိနိုင်သည် */
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Scrollbar လေးကို ပိုလှအောင် ပြင်ဆင်ခြင်း (Optional) */
+.doctor-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+.doctor-list-container::-webkit-scrollbar-thumb {
+    background-color: #0d6efd;
+    border-radius: 10px;
+}
+
+/* Table ကို Scroll ဆွဲနိုင်အောင် လုပ်ခြင်း */
+.table-scroll-container {
+    max-height: 300px; /* ဆရာဝန်စာရင်း Box နဲ့ ညီအောင် အမြင့်ကို ညှိနိုင်သည် */
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Scrollbar ကို လှပအောင် ပြင်ဆင်ခြင်း */
+.table-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background-color: #0d6efd;
+    border-radius: 10px;
+}
+
+/* Table Header ကို Scroll ဆွဲသော်လည်း အပေါ်မှာ ငြိမ်နေစေရန် (Sticky Header) */
+.table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa; /* Header နောက်ခံအရောင် */
+    z-index: 10;
+    box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
+}
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/admin">MEDICARE</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto text-center">
+                    <li class="nav-item"><a class="nav-link active" href="/admin">ပင်မစာမျက်နှာ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/admin/doctors">ဆရာဝန်များ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/admin/patients">လူနာများ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/admin/appointments">ရက်ချိန်းများ</a></li>
+                </ul>
+                <a href="/logout" class="logout-btn nav-link fw-bold">ထွက်ရန်</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="fw-bold">Dashboard အကျဉ်းချုပ်</h1>
+            <p class="opacity-75">ဆေးရုံရှိ ဆရာဝန်စာရင်းများ၊ လူနာစာရင်းများနှင့် ရက်ချိန်းများကို ဤနေရာတွင် စီမံခန့်ခွဲနိုင်ပါသည်။</p>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
+    
+    <a href="/admin/patients" class="text-decoration-none">
+        <div class="stat-card bg-blue">
+            <small>စုစုပေါင်း လူနာ</small>
+            <h1>{{ user_count }}</h1>
+        </div>
+    </a>
+
+    <a href="/admin/appointments" class="text-decoration-none">
+        <div class="stat-card bg-green">
+            <small>စုစုပေါင်း ရက်ချိန်း</small>
+            <h1>{{ appt_count }}</h1>
+        </div>
+    </a>
+
+    <a href="/admin/doctors" class="text-decoration-none">
+        <div class="stat-card bg-purple">
+            <small>ဆရာဝန် အရေအတွက်</small>
+            <h1>{{ doctor_count }}</h1>
+        </div>
+    </a>
+
+    <a href="{{ url_for('admin_emergency_list') }}" class="text-decoration-none">
+    <div class="stat-card bg-red" style="background: #ff6b6b; color: white; padding: 20px; border-radius: 15px;">
+        <small>အရေးပေါ်လူနာ</small>
+        <h1>{{ emergency_count }}</h1>
+    </div>
+</a>
+</div>
+
+            <div class="container-fluid px-4"> <div class="row">
+            
+            <div class="col-xl-3 col-lg-4 mb-4">
+                <div class="visual-container h-100 p-4 shadow-sm rounded-4 bg-white border">
+                    <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">ဆရာဝန်များ အခြေအနေ</h5>
+                    <div class="doctor-list-container">
+                        {% for doctor in doctors_list %}
+                        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-md me-3 text-primary fs-5"></i>
+                                <span class="fw-bold text-secondary">Dr. {{ doctor['full_name'] }}</span>
+                            </div>
+                            {% if doctor['status'] == 'Available' %}
+                                <span class="badge rounded-pill bg-success-subtle text-success border border-success px-3">အားလပ်သည်</span>
+                            {% elif doctor['status'] == 'In Room' %}
+                                <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-3">လူနာကြည့်နေသည်</span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning px-3">အပြင်သွားသည်</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-9 col-lg-8 mb-4">
+                <div class="table-container shadow-lg h-100" style="background: white !important; border: 1px solid #dee2e6;">
+                    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+                        <h3 class="fw-bold m-0 text-dark">လတ်တလော လှုပ်ရှားမှုများ</h3>
+                        <a href="/admin/appointments" class="btn btn-primary rounded-pill px-4 fw-bold shadow">အားလုံးကြည့်ရန်</a>
+                    </div>
+                    
+                    <div class="row g-3 mb-4 align-items-center bg-light p-3 rounded-4 mx-1">
+                        <div class="col-md-5">
+                            <div class="input-group shadow-sm bg-white" style="border-radius: 30px; overflow: hidden; border: 1px solid #ced4da;">
+                                <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="patientSearch" class="form-control border-0 p-2" placeholder="လူနာအမည်ဖြင့် ရှာဖွေပါ..." onkeyup="searchTable()">
+                            </div>
+                        </div>
+                        <div class="col-md-7 d-flex justify-content-md-end gap-2 flex-wrap">
+                            <button class="btn btn-primary rounded-pill px-3 filter-btn" onclick="filterAppointments('all')">အားလုံး</button>
+                            <button class="btn btn-outline-primary rounded-pill px-3 filter-btn" onclick="filterAppointments('today')">ယနေ့</button>
+                            <button class="btn btn-outline-primary rounded-pill px-3 filter-btn" onclick="filterAppointments('tomorrow')">မနက်ဖြန်</button>
+                            <input type="date" id="customDate" class="form-control rounded-pill d-inline-block w-auto shadow-sm" onchange="filterAppointments('custom')">
+                        </div>
+                    </div>
+                    <div class="table-scroll-container">
+                    <div class="table-responsive">
+                        <table class="table align-middle w-100" style="border-collapse: separate; border-spacing: 0 10px;">
+                            <thead>
+                                <tr class="text-secondary">
+                                    <th class="text-center" style="width: 60px;">စဉ်</th>
+                                    <th>လူနာအမည်</th>
+                                    <th>အီးမေးလ်</th>
+                                    <th>ရက်စွဲ</th>
+                                    <th>ဆရာဝန်</th>
+                                    <th>ဖုန်း</th>
+                                    <th>အခြေအနေ</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for act in activities %}
+                                <tr class="appointment-item shadow-sm border" data-date="{{ act['booking_time'] }}" style="background: #f8fafc;">
+                                    <td class="text-center"><div class="index-box mx-auto">{{ loop.index }}</div></td>
+                                    <td><span class="text-dark fw-bold">{{ act['patient_name'] }}</span></td>
+                                    <td><span class="text-muted small">{{ act['patient_email'] }}</span></td>
+                                    <td><span class="text-secondary small">{{ act['booking_time'] }}</span></td>
+                                    <td><span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-3">Dr. {{ act['doctor_name'] }}</span></td>
+                                    <td><span class="text-dark small">{{ act['patient_phone'] }}</span></td>
+                                    <td><span class="status-badge">Confirmed</span></td>
+                                    <td class="text-center">
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <a href="mailto:{{ act['patient_email'] }}" class="btn btn-sm btn-outline-info rounded-circle"><i class="fas fa-envelope"></i></a>
+                                            <button class="btn btn-sm btn-outline-success rounded-circle"><i class="fas fa-check"></i></button>
+                                            <button class="btn btn-sm btn-outline-danger rounded-circle"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // သင့်မူရင်း Filter Logic အရှည်ကြီး
+        function filterAppointments(type) {
+            const items = document.querySelectorAll('.appointment-item');
+            const customDateInput = document.getElementById('customDate').value;
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrowDate = new Date();
+            tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+            const tomorrow = tomorrowDate.toISOString().split('T')[0];
+            let visibleCount = 1;
+
+            items.forEach(item => {
+                const fullDate = item.getAttribute('data-date');
+                const itemDate = fullDate.split(' ')[0];
+                let isVisible = false;
+
+                if (type === 'all') isVisible = true;
+                else if (type === 'today' && itemDate === today) isVisible = true;
+                else if (type === 'tomorrow' && itemDate === tomorrow) isVisible = true;
+                else if (type === 'custom' && itemDate === customDateInput) isVisible = true;
+
+                if (isVisible) {
+                    item.style.display = '';
+                    const indexBox = item.querySelector('.index-box');
+                    if (indexBox) indexBox.textContent = visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.replace('btn-primary', 'btn-outline-primary'));
+            if (event && event.currentTarget && event.currentTarget.classList.contains('filter-btn')) {
+                event.currentTarget.classList.replace('btn-outline-primary', 'btn-primary');
+            }
+        }
+        function searchTable() {
+    const input = document.getElementById("patientSearch");
+    const filter = input.value.toLowerCase();
+    const rows = document.querySelectorAll(".appointment-item");
+
+    rows.forEach(row => {
+        // လူနာအမည် (Column 2) နှင့် အီးမေးလ် (Column 3) ကို စစ်ဆေးခြင်း
+        const name = row.cells[1].textContent.toLowerCase();
+        const email = row.cells[2].textContent.toLowerCase();
+        
+        if (name.indexOf(filter) > -1 || email.indexOf(filter) > -1) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+}
+    </script>
+</body>
+</html>

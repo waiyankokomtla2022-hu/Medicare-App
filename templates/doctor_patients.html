@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ကျွန်ုပ်၏လူနာများ - Medicare</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', 'Pyidaungsu', sans-serif; }
+        .navbar { background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 15px 0; }
+        .navbar-brand { font-weight: bold; color: #0d6efd !important; font-size: 24px; }
+        .nav-link { color: #2c3e50 !important; font-weight: 500; margin: 0 10px; }
+        .nav-link:hover, .nav-link.active { color: #0d6efd !important; }
+        .logout-btn { border: 1px solid #dc3545; color: #dc3545 !important; border-radius: 20px; padding: 5px 20px !important; }
+        .hero-banner { background: linear-gradient(135deg, #198754, #2c3e50); color: white; padding: 40px 0; text-align: center; margin-bottom: 40px; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    /* Search Box အကြွ Style */
+.search-container {
+    max-width: 400px;
+    margin-bottom: 25px;
+}
+
+.search-box-custom {
+    border-radius: 50px;
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* အကြွအရိပ် */
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding: 5px 15px;
+}
+
+.search-box-custom:focus-within {
+    transform: translateY(-3px); /* ရိုက်နေစဉ် အပေါ်သို့ အနည်းငယ် ကြွတက်ခြင်း */
+    box-shadow: 0 12px 25px rgba(13, 110, 253, 0.15);
+    border-color: #0d6efd;
+}
+
+.search-box-custom i {
+    color: #0d6efd; /* Icon အရောင်ပြောင်းရန် */
+    font-size: 1.1rem;
+    margin-right: 10px;
+}
+
+.search-box-custom input {
+    border: none;
+    box-shadow: none;
+    font-size: 0.95rem;
+    padding: 10px;
+}
+
+.search-box-custom input:focus {
+    outline: none;
+    box-shadow: none;
+}
+    </style> 
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/doctor">MEDICARE</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/doctor">ပင်မစာမျက်နှာ</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/doctor/my_patients">ကျွန်ုပ်၏လူနာများ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/doctor/manage_schedule">အချိန်ဇယားပြင်ဆင်ရန်</a></li>
+                </ul>
+                <a href="/logout" class="logout-btn nav-link">ထွက်ရန်</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-banner">
+        <div class="container">
+            <h2 class="fw-bold"><i class="fas fa-users-medical me-2"></i>လူနာမှတ်တမ်းများ</h2>
+            <p class="opacity-75">သင့်ထံတွင် ရက်ချိန်းယူထားဖူးသော လူနာအားလုံး၏ စာရင်းဖြစ်ပါသည်။</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card p-4 mb-5">
+           <div class="d-flex justify-content-end">
+    <div class="search-container">
+        <div class="search-box-custom">
+            <i class="fas fa-search"></i>
+            <input type="text" id="patientSearch" class="form-control" 
+                   placeholder="လူနာအမည်ဖြင့် ရှာဖွေပါ..." onkeyup="searchPatients()">
+        </div>
+    </div>
+</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>လူနာအမည်</th>
+                            <th>ဖုန်း/အီးမေးလ်</th>
+                            <th>ရက်စွဲ</th>
+                            <th>အခြေအနေ</th>
+                            <th>လုပ်ဆောင်ချက်</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pt in patients %}
+<tr class="patient-row">
+    <td><span class="fw-bold text-dark">{{ pt['patient_name'] }}</span></td>
+    <td><small>{{ pt['phone'] }}<br>{{ pt['email'] }}</small></td>
+    <td>{{ pt['booking_time'] }}</td>
+    <td>
+        {% if pt['status'] == 'booked' %}
+            <span class="badge bg-primary">စောင့်ဆိုင်းဆဲ</span>
+        {% else %}
+            <span class="badge bg-success">ပြီးမြောက်</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if pt['status'] == 'booked' %}
+        <a href="/complete_appointment/{{ pt['appointment_id'] }}" class="btn btn-sm btn-success">
+            <i class="fas fa-check me-1"></i> ပြီးပြီဟုမှတ်သားရန်
+        </a>
+        {% else %}
+        <button class="btn btn-sm btn-light border" disabled>ပြီးမြောက်ပြီး</button>
+        {% endif %}
+    </td>
+    <td>
+        <a href="{{ url_for('view_patient_records', patient_id=pt['patient_id']) }}" 
+           class="btn btn-sm btn-info text-white">
+           <i class="fas fa-eye me-1"></i> မှတ်တမ်းကြည့်ရန်
+        </a>
+    </td>
+</tr>
+{% endfor %}
+<tr id="noPatientsFoundRow" style="display: none;">
+    <td colspan="6" class="text-center py-5 text-muted">
+        <div class="mb-3">
+            <i class="fas fa-user-slash fa-3x opacity-25"></i>
+        </div>
+        <h6 class="fw-bold">ရှာဖွေမှုမတွေ့ရှိပါ</h6>
+        <p class="small">ရိုက်နှိပ်ထားသော အမည်ဖြင့် လူနာမှတ်တမ်းမရှိပါ။</p>
+    </td>
+</tr>
+</tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+function searchPatients() {
+    const input = document.getElementById("patientSearch");
+    const filter = input.value.toLowerCase().trim();
+    const rows = document.querySelectorAll(".patient-row");
+    const noResults = document.getElementById("noPatientsFoundRow");
+    let hasMatch = false;
+
+    rows.forEach(row => {
+        // ပထမဆုံး Column (လူနာအမည်) ကို စစ်ဆေးခြင်း
+        const nameCell = row.getElementsByTagName("td")[0];
+        if (nameCell) {
+            const textValue = nameCell.textContent || nameCell.innerText;
+            if (textValue.toLowerCase().indexOf(filter) > -1) {
+                row.style.display = "";
+                hasMatch = true;
+            } else {
+                row.style.display = "none";
+            }
+        }
+    });
+
+    // ရှာမတွေ့ရင် "မတွေ့ပါ" ဆိုတဲ့ row ကို ဖော်ပြမည်
+    if (hasMatch || filter === "") {
+        noResults.style.display = "none";
+    } else {
+        noResults.style.display = "";
+    }
+}
+</script>
+</body>
+</html>

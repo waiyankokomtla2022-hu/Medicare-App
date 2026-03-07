@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare - Online Healthcare Booking</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#2b3a42">
+
+    <style>
+        :root { --primary-color: #0d6efd; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4)), 
+                        url('https://images.unsplash.com/photo-1512678080530-7760d81faba6?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .navbar { background: rgba(255, 255, 255, 0.95) !important; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .hero-title { font-size: 3.5rem; font-weight: 800; color: #004a99 !important; text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.7); }
+
+        #features { background: #f8fbfe; }
+        #features .card {
+            background: #e3f2fd !important; 
+            border: none !important;
+            border-radius: 25px;
+            padding: 2rem 1.5rem !important;
+            transition: all 0.4s ease;
+            height: 100%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        #features .card:hover {
+            background: #ffffff !important;
+            transform: translateY(-12px);
+            box-shadow: 0 15px 30px rgba(13, 110, 253, 0.15) !important;
+        }
+
+        .service-icon { font-size: 60px; margin-bottom: 25px; display: block; }
+        .icon-doctor { color: #0056b3; }
+        .icon-clock { color: #198754; }
+        .icon-system { color: #f39c12; }
+        .icon-ai { color: #8e44ad; }
+
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.2rem; }
+        }
+
+        .main-footer { background-color: #1a2a6c; color: #ffffff; padding: 60px 0 30px; }
+        .footer-brand { font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; color: #ffffff; }
+        .footer-link { color: #cbd5e0; text-decoration: none; transition: 0.3s; display: block; margin-bottom: 10px; }
+        .footer-link:hover { color: #3498db; padding-left: 5px; }
+        .social-icons a { width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1); display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: white; margin-right: 10px; transition: 0.3s; }
+        .social-icons a:hover { background: #3498db; transform: translateY(-5px); }
+        .contact-info i { width: 25px; color: #3498db; }
+        .footer-bottom { border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: 40px; padding-top: 20px; font-size: 0.9rem; color: #cbd5e0; }
+    
+        /* Responsive adjustments for Mobile */
+@media (max-width: 768px) {
+    /* Hero Title ကို ဖုန်းနဲ့တော်အောင် သေးလိုက်ခြင်း */
+    .hero-title { 
+        font-size: 1.8rem !important; 
+        padding: 0 10px;
+    }
+    
+    /* Hero Section ထဲက စာသားတွေကို အောက်နားရောက်အောင် ညှိခြင်း */
+    .hero-section {
+        height: 80vh; /* ဖုန်းမှာ အရမ်းကြီးမနေအောင် */
+    }
+
+    /* ဝန်ဆောင်မှုကတ် (Service Cards) များကို တစ်ခုချင်းစီ အစီအရီပြခြင်း */
+    #features .card {
+        margin-bottom: 20px;
+        padding: 1.5rem !important;
+    }
+
+    /* Navbar ထဲက စာသားရှည်နေရင် သေးလိုက်ခြင်း */
+    .navbar-brand {
+        font-size: 0.9rem;
+        white-space: normal;
+    }
+}
+    </style>
+
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
+                    .then(reg => console.log('Service Worker Registered'))
+                    .catch(err => console.log('Service Worker Failed', err));
+            });
+        }
+    </script>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="#">Online Appointment Booking System for Healthcare</a>
+            <div class="ms-auto">
+                <a href="/login_page" class="btn btn-outline-primary rounded-pill px-4 me-2">Login</a>
+                <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#registerModal">Sign Up</button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero-section">
+        <div class="container text-center">
+            <h1 class="hero-title animate__animated animate__fadeInDown">
+                Quality Healthcare at Your Fingertips
+            </h1>
+            <p class="lead animate__animated animate__fadeInUp animate__delay-1s">
+                ဆေးရုံ၊ ဆေးခန်းသွားရန် အချိန်ကုန်ခံ စောင့်ဆိုင်းနေစရာ မလိုတော့ပါ။<br>
+                အွန်လိုင်းမှတစ်ဆင့် အကောင်းဆုံးဆရာဝန်ကြီးများနှင့် လွယ်ကူလျင်မြန်စွာ ရက်ချိန်းရယူလိုက်ပါ။
+            </p>
+            <div class="mt-4 animate__animated animate__zoomIn animate__delay-2s">
+                <button class="btn btn-primary px-5 py-3 me-3 fw-bold rounded-pill" data-bs-toggle="modal" data-bs-target="#registerModal">Get Started Now</button>
+                <a href="#features" class="btn btn-outline-light px-5 py-3 fw-bold border-2 rounded-pill" id="learnMoreBtn" style="color: #ffffff; border-color: #ffffff;">Learn More</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5 animate__animated animate__fadeIn">
+            <h2 class="fw-bold" style="color: #1a2a6c; font-size: 2.5rem;">ကျွန်ုပ်တို့၏ ဝန်ဆောင်မှုများ</h2>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                <div class="card feature-card animate__animated animate__fadeInUp">
+                    <i class="fas fa-user-md service-icon icon-doctor"></i>
+                    <h4 class="fw-bold mb-3" style="color: #1a2a6c; font-size: 1.25rem;">ကျွမ်းကျင်ဆရာဝန်ကြီးများ</h4>
+                    <p class="text-muted mb-0">အထူးကုဆရာဝန်ကြီးများနှင့် တိုက်ရိုက်ရက်ချိန်းယူနိုင်ပါသည်။</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 text-center">
+                <div class="card feature-card animate__animated animate__fadeInUp animate__delay-1s">
+                    <i class="fas fa-robot service-icon icon-ai"></i>
+                    <h4 class="fw-bold mb-3" style="color: #1a2a6c; font-size: 1.25rem;">AI-Chatbot ဆွေးနွေးမှု</h4>
+                    <p class="text-muted mb-0">မိမိခံစားနေရသော ဝေဒနာများကို AI နှင့် အရင်ဆုံး တိုင်ပင်ဆွေးနွေးနိုင်ပါသည်။</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 text-center">
+                <div class="card feature-card animate__animated animate__fadeInUp animate__delay-2s">
+                    <i class="fas fa-history service-icon icon-clock"></i>
+                    <h4 class="fw-bold mb-3" style="color: #1a2a6c; font-size: 1.25rem;">၂၄နာရီ ဝန်ဆောင်မှု</h4>
+                    <p class="text-muted mb-0">မည်သည့်အချိန်တွင်မဆို အွန်လိုင်းမှတစ်ဆင့် ရက်ချိန်းများကို လွယ်ကူစွာ ရယူနိုင်ပါသည်။</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 text-center">
+                <div class="card feature-card animate__animated animate__fadeInUp animate__delay-3s">
+                    <i class="fas fa-laptop-medical service-icon icon-system"></i>
+                    <h4 class="fw-bold mb-3" style="color: #1a2a6c; font-size: 1.25rem;">လွယ်ကူသောစနစ်</h4>
+                    <p class="text-muted mb-0">လူနာမှတ်တမ်းများနှင့် ရက်ချိန်းများကို တစ်နေရာတည်းတွင် စနစ်တကျ စီမံနိုင်ပါသည်။</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="main-footer">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-brand">Medicare System</div>
+                <p class="text-white-50">ကျွန်ုပ်တို့သည် လူနာများအတွက် အကောင်းဆုံး ကျန်းမာရေးစောင့်ရှောက်မှုနှင့် အဆင်ပြေဆုံး ရက်ချိန်းရယူနိုင်သော စနစ်ကို ပေးစွမ်းနေပါသည်။</p>
+                <div class="social-icons mt-4">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-messenger"></i></a>
+                    <a href="#"><i class="fab fa-viber"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <h5 class="fw-bold mb-4">Quick Links</h5>
+                <a href="#" class="footer-link">Home</a>
+                <a href="#features" class="footer-link">Services</a>
+                <a href="#" class="footer-link">Doctors</a>
+                <a href="#" class="footer-link">Contact Us</a>
+            </div>
+
+            <div class="col-lg-4 col-md-12 contact-info">
+                <h5 class="fw-bold mb-4">Contact Info</h5>
+                <p><i class="fas fa-map-marker-alt"></i> အမှတ် (၁၂၃)၊ ချယ်ရီလမ်း၊ ပြင်ဦးလွင်မြို့။</p>
+                <p><i class="fas fa-phone-alt"></i> 09687926293၊ 09897385717</p>
+                <p><i class="fas fa-envelope"></i> admin@gmail.com </p>
+                <p><i class="fas fa-clock"></i> နေ့စဉ် ၂၄ နာရီ ဖွင့်လှစ်ထားပါသည်။</p>
+            </div>
+        </div>
+
+        <div class="footer-bottom text-center">
+            <p>&copy; 2026 Medicare Online Healthcare. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-header bg-primary text-white border-0 py-3">
+                    <h5 class="modal-title fw-bold">Create New Account</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/register" method="POST">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Full Name</label>
+                            <input type="text" name="full_name" class="form-control bg-light border-0" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email Address</label>
+                            <input type="email" name="email" class="form-control bg-light border-0" placeholder="name@example.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control bg-light border-0" placeholder="09xxxxxxxxx" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Password</label>
+                            <input type="password" name="password" class="form-control bg-light border-0" placeholder="Create a password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">City</label>
+                            <input type="text" name="city" class="form-control bg-light border-0" placeholder="e.g. Yangon" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-4 pb-4">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">Sign Up Now</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById('learnMoreBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.getElementById('features');
+            const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
+            const startPosition = window.pageYOffset;
+            const distance = targetPosition - startPosition;
+            const duration = 2500; 
+            let start = null;
+
+            window.requestAnimationFrame(step);
+
+            function step(timestamp) {
+                if (!start) start = timestamp;
+                const progress = timestamp - start;
+                window.scrollTo(0, easeInOutCubic(progress, startPosition, distance, duration));
+                if (progress < duration) window.requestAnimationFrame(step);
+            }
+
+            function easeInOutCubic(t, b, c, d) {
+                t /= d / 2;
+                if (t < 1) return c / 2 * t * t * t + b;
+                t -= 2;
+                return c / 2 * (t * t * t + 2) + b;
+            }
+        });
+    </script>
+</body>
+</html>

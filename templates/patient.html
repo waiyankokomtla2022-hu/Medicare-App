@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - Medicare</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register("/sw.js")
+        .then(reg => console.log('Service Worker Registered'))
+        .catch(err => console.log('Registration Failed', err));
+    });
+  }
+</script>
+    <style>
+        /* General Styles */
+        body { 
+            background-color: #f0f2f5; 
+            font-family: 'Segoe UI', 'Pyidaungsu', sans-serif; 
+            overflow-x: hidden;
+        }
+
+        .navbar { 
+            background: white; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            padding: 15px 0;
+        }
+
+        .welcome-section { 
+            background: linear-gradient(135deg, #3498db, #2c3e50); 
+            color: white; 
+            padding: 60px 0; 
+            border-radius: 0 0 40px 40px; 
+            margin-bottom: 40px;
+        }
+
+        /* Feature Card Styles */
+        .feature-card { 
+            border: none; 
+            border-radius: 25px; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            cursor: pointer; 
+            height: 100%; 
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover { 
+            transform: translateY(-12px); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12); 
+        }
+
+        .icon-circle { 
+            width: 70px; 
+            height: 70px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 0 auto 20px; 
+            font-size: 1.8rem;
+        }
+
+        .bg-blue-light { background: rgba(52, 152, 219, 0.15); color: #3498db; }
+        .bg-green-light { background: rgba(46, 204, 113, 0.15); color: #2ecc71; }
+        .bg-orange-light { background: rgba(241, 196, 15, 0.15); color: #f39c12; }
+
+        .bg-primary-soft { 
+            background-color: rgba(52, 152, 219, 0.1); 
+            color: #3498db; 
+        }
+
+        /* Doctor Profiles */
+        .doc-img-circle { 
+            width: 55px; 
+            height: 55px; 
+            object-fit: cover; 
+            border-radius: 50%; 
+            border: 2px solid #fff; 
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1); 
+        }
+
+        .doc-profile-large { 
+            width: 120px; 
+            height: 120px; 
+            object-fit: cover; 
+            border-radius: 50%; 
+            border: 5px solid white; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
+            margin-top: -60px; 
+            background: white; 
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ဆေးမှတ်တမ်း Notebook Design */
+        .notebook-page {
+            background: #ffffff !important;
+            border: 1px solid #e0e0e0 !important;
+            border-left: 10px solid #f1c40f !important;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 35px;
+            color: #2c3e50 !important;
+            page-break-inside: avoid;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .notebook-page p, .notebook-page span, .notebook-page div {
+            letter-spacing: normal !important;
+            line-height: 1.9 !important;
+        }
+
+        .page-header { 
+            border-bottom: 2px dashed #f0f2f5; 
+            padding-bottom: 15px; 
+            margin-bottom: 20px; 
+        }
+
+        .date-badge { 
+            background: #fff9e6; 
+            color: #856404; 
+            padding: 8px 18px; 
+            border-radius: 50px; 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+            border: 1px solid #ffeeba; 
+        }
+
+        .record-section-title { 
+            font-size: 0.85rem; 
+            color: #f39c12; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            margin-bottom: 10px; 
+            letter-spacing: 0.8px; 
+        }
+
+        .recommendation-box { 
+            background: #fdfdfd; 
+            border-left: 4px solid #f1c40f; 
+            padding: 15px; 
+            border-radius: 0 10px 10px 0; 
+            font-style: italic; 
+            color: #555;
+            border-top: 1px solid #f1f1f1;
+            border-right: 1px solid #f1f1f1;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        /* PDF Export Styling */
+        #pdf-content { 
+            background-color: #ffffff !important; 
+            padding: 30px !important;
+        }
+
+        /* Chat Window Styles */
+        #chat-window {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            scroll-behavior: smooth;
+            height: 400px;
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-size: 14.5px;
+            line-height: 1.6;
+            position: relative;
+            word-wrap: break-word;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #0084ff, #0073e6);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: #e4e6eb;
+            color: #1c1e21;
+            border-bottom-left-radius: 5px;
+        }
+
+        #chat-options {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-option {
+            border: 1px solid #0084ff;
+            color: #0084ff;
+            background: white;
+            border-radius: 50px;
+            padding: 8px 15px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-option:hover {
+            background: #0084ff;
+            color: white;
+        }
+
+        .cursor-pointer { cursor: pointer; }
+
+        /* Animation */
+        @keyframes ring {
+            0% { transform: rotate(0); }
+            10% { transform: rotate(15deg); }
+            20% { transform: rotate(-15deg); }
+            30% { transform: rotate(10deg); }
+            40% { transform: rotate(-10deg); }
+            50% { transform: rotate(0); }
+            100% { transform: rotate(0); }
+        }
+        .animate-ring {
+            display: inline-block;
+            animation: ring 2s infinite;
+        }
+        .card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+}
+.mt-auto {
+    margin-top: auto !important; /* ခလုတ်တွေကို ကတ်ရဲ့ အောက်ခြေမှာ အညီဖြစ်စေဖို့ပါ */
+}
+
+/* Search Box အကြွ ဒီဇိုင်း */
+.custom-search-box {
+    border-radius: 50px;
+    background: #ffffff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); /* ပုံမှန် အကြွ shadow */
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+}
+
+.custom-search-box:hover {
+    transform: translateY(-3px); /* mouse တင်လိုက်ရင် အပေါ်နည်းနည်းကြွမယ် */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+}
+
+.custom-search-box:focus-within {
+    transform: translateY(-3px);
+    border: 1px solid #3498db; /* Focus ရောက်ရင် Border အရောင်ပြောင်းမယ် */
+    box-shadow: 0 15px 30px rgba(52, 152, 219, 0.2);
+}
+
+#doctorSearchInput:focus {
+    box-shadow: none; /* Bootstrap ရဲ့ default shadow ကို ဖျောက်တာပါ */
+    background: transparent;
+}
+
+.custom-search-box .fa-search {
+    transition: all 0.3s ease;
+}
+
+.custom-search-box:focus-within .fa-search {
+    transform: scale(1.2); /* Focus ရောက်ရင် မှန်ဘီလူးပုံလေး ကြီးလာမယ် */
+}
+
+/* Chat Input အကြွဒီဇိုင်း */
+.chat-input-wrapper {
+    background: #f1f3f5;
+    border-radius: 50px;
+    padding: 5px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); /* အထဲဘက် အရိပ်အနည်းငယ် */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+}
+
+/* စာရိုက်ဖို့ နှိပ်လိုက်တဲ့အခါ (Focus) ဖြစ်မည့်ပုံစံ */
+.chat-input-wrapper:focus-within {
+    background: #ffffff;
+    transform: translateY(-2px); /* အပေါ်ကို အနည်းငယ် ကြွတက်မယ် */
+    border-color: #00d2ff;
+    box-shadow: 0 8px 20px rgba(0, 210, 255, 0.15); /* အပြာနုရောင် အကြွအရိပ် */
+}
+
+/* ပို့မည် ခလုတ် ဒီဇိုင်း */
+.btn-send-style {
+    background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+    color: white;
+    border-radius: 50px !important;
+    border: none;
+    font-weight: 600;
+    padding: 8px 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-send-style:hover {
+    box-shadow: 0 4px 12px rgba(58, 123, 213, 0.3);
+    transform: scale(1.05);
+    color: white;
+}
+
+#chatInput:focus {
+    box-shadow: none; /* Default shadow ကို ဖျောက်ထားတာပါ */
+}
+    /* ခလုတ်တွေရဲ့ မူလပုံစံ */
+    .btn-outline-primary, .btn-outline-success, .btn-outline-danger, 
+    .btn-outline-warning, .btn-outline-info {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-width: 2px !important;
+        background-color: white !important; /* မူလက နောက်ခံအဖြူ */
+        font-weight: 600 !important;
+    }
+
+    /* Mouse တင်လိုက်တဲ့အခါ (Hover) */
+    .btn-outline-primary:hover, .btn-outline-success:hover, 
+    .btn-outline-danger:hover, .btn-outline-warning:hover, 
+    .btn-outline-info:hover {
+        transform: translateY(-5px) !important; /* အပေါ်ကြွတက်မည် */
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important; /* အရိပ်ထွက်မည် */
+        color: white !important; /* စာသားအရောင်ကို အဖြူရောင် လုံးဝဖြစ်စေရန် */
+    }
+
+    /* တစ်ခုချင်းစီအတွက် Hover နောက်ခံအရောင် သတ်မှတ်ခြင်း */
+    .btn-outline-primary:hover { background-color: #007bff !important; }
+    .btn-outline-success:hover { background-color: #28a745 !important; }
+    .btn-outline-danger:hover  { background-color: #dc3545 !important; }
+    .btn-outline-warning:hover { background-color: #ffc107 !important; }
+    .btn-outline-info:hover    { background-color: #17a2b8 !important; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="#">
+                <i class="fas fa-heartbeat me-2"></i>MEDICARE
+            </a>
+            <div class="ms-auto d-flex align-items-center">
+                <span class="me-3 text-muted d-none d-sm-inline">
+                    မင်္ဂလာပါ၊ <strong>{{ session['full_name'] }}</strong>
+                </span>
+                <a href="/logout" class="btn btn-outline-danger btn-sm rounded-pill px-4 py-2 fw-bold">
+                    ထွက်မည်
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0 mb-3" role="alert" style="border-radius: 15px;">
+                <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="welcome-section text-center">
+        <div class="container">
+            <h1 class="fw-bold display-5 mb-3">ဒီနေ့ ဘာကူညီပေးရမလဲခင်ဗျာ။</h1>
+            <p class="opacity-75 lead">သင့်ကျန်းမာရေးအတွက် အကောင်းဆုံးဝန်ဆောင်မှုများကို တစ်နေရာတည်းတွင် ဆောင်ရွက်နိုင်ပါတယ်ခင်ဗျ</p>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if queues %}
+        <div class="mb-5">
+            <h5 class="fw-bold mb-4 text-primary">
+                <i class="fas fa-hospital-user me-2"></i>သင့်ရက်ချိန်း အခြေအနေများ
+            </h5>
+            <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+                {% for queue in queues %}
+                <div class="col" style="max-width: 500px;">
+                    <div class="card shadow-sm border-0 h-100" style="border-radius: 25px; border-top: 6px solid #3498db;">
+                        <div class="card-body p-4 text-center">
+                            <span class="badge bg-primary-soft rounded-pill px-4 py-2 mb-3">
+                                <i class="far fa-calendar-alt me-2"></i> {{ queue.booking_time }}
+                            </span>
+                            <h4 class="fw-bold text-dark mb-1">Dr. {{ queue.doctor_name }}</h4>
+                            
+                            <hr class="my-4 opacity-10">
+                            
+                            <div class="row mb-4">
+                                <div class="col-6 border-end">
+                                    <small class="text-muted d-block text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">သင့်အလှည့်</small>
+                                    <h2 class="fw-bold text-primary mb-0">{{ queue.my_index }}</h2>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">ရှေ့တွင်စောင့်သူ</small>
+                                    <h2 class="fw-bold text-danger mb-0 ahead-count">{{ queue.ahead }}</h2>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 rounded-pill {% if queue.ahead == 0 %}bg-success text-white shadow-lg{% else %}bg-light text-muted border{% endif %} mb-4">
+                                {% if queue.ahead == 0 %}
+                                    <i class="fas fa-bell animate-ring me-2"></i><strong>သင့်အလှည့်ရောက်ပါပြီ! ဆရာဝန်ခန်းသို့ ကြွပါ။</strong>
+                                {% else %}
+                                    <i class="fas fa-hourglass-half me-2"></i>ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ။
+                                {% endif %}
+                            </div>
+                            
+                            <a href="{{ url_for('cancel_appointment', id=queue.id) }}" 
+                               class="btn btn-link text-danger text-decoration-none btn-sm fw-bold" 
+                               onclick="return confirm('ဖျက်သိမ်းရန် သေချာပါသလား?')">
+                                <i class="fas fa-times me-1"></i> ရက်ချိန်းဖျက်သိမ်းမည်
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="container mt-4">
+    <div class="row g-4 mb-5">
+        <div class="col-xl-4 col-md-6">
+            <div class="card h-100 shadow-sm border-0 overflow-hidden" style="border-radius: 20px;">
+                <div style="height: 180px; width: 100%; overflow: hidden;">
+                    <img src="static/doctor image.jpg" 
+                         style="width: 100%; height: 100%; object-fit: cover; object-position: center 15%;" alt="Doctor Team">
+                </div>
+                <div class="card-body text-center p-4 d-flex flex-column">
+                    <h5 class="fw-bold">ဆရာဝန်ရှာရန်</h5>
+                    <p class="text-muted small">အထူးကုဆရာဝန်ကြီးများနှင့် ရက်ချိန်းယူရန်</p>
+                    <button class="btn btn-primary w-100 rounded-pill py-2 mt-auto" data-bs-toggle="modal" data-bs-target="#doctorListModal">ရှာဖွေမည်</button>
+                </div>
+            </div>
+        </div>
+
+       <div class="col-xl-4 col-md-6">
+    <div class="card h-100 shadow-sm border-0 overflow-hidden" style="border-radius: 20px;">
+        <div style="height: 180px; width: 100%; overflow: hidden; background-color: #ebe3dc; display: flex; align-items: center; justify-content: center;">
+            <img src="{{ url_for('static', filename='Medical Records.jpg') }}" 
+                 style="height: 95%; width: auto; object-fit: contain;" 
+                 alt="Medical Book">
+        </div>
+        
+        <div class="card-body text-center p-4 d-flex flex-column">
+            <h5 class="fw-bold">ဆေးမှတ်တမ်းစာအုပ်</h5>
+            <p class="text-muted small">ယခင်ပြသခဲ့သော မှတ်တမ်းများကို ကြည့်ရန်</p>
+            <button class="btn btn-warning text-white w-100 rounded-pill py-2 mt-auto" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#medicalRecordsModal">
+                ဖွင့်ကြည့်မည်
+            </button>
+        </div>
+    </div>
+</div>
+        <div class="col-xl-4 col-md-6">
+    <div class="card h-100 shadow-sm border-0 overflow-hidden" style="border-radius: 20px;">
+        <div style="height: 180px; width: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; background-color: #2b3a42;">
+            <img src="{{ url_for('static', filename='Ai Chatbot.webp') }}" 
+                 style="height: 85%; width: auto; object-fit: contain;" 
+                 alt="AI Robot">
+        </div>
+        <div class="card-body text-center p-4 d-flex flex-column">
+            <h5 class="fw-bold">AI နှင့် တိုင်ပင်ရန်</h5>
+            <p class="text-muted small">ရောဂါလက္ခဏာများကို AI နှင့် ဆွေးနွေးတိုင်ပင်ရန်</p>
+            <button class="btn btn-info text-white w-100 rounded-pill py-2 mt-auto" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#manualChatModal">
+                စာရိုက်မေးမည်
+            </button>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 20px;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-history me-2 text-primary"></i>ယခင်ရက်ချိန်းများ</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="border-0">ဆရာဝန်</th>
+                                    <th class="border-0">ရက်စွဲ</th>
+                                    <th class="border-0 text-center">အခြေအနေ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if appointments %}
+                                    {% for appt in appointments %}
+                                    <tr>
+                                        <td class="fw-bold py-3">
+                                            <i class="fas fa-user-doctor me-2 text-muted"></i>Dr. {{ appt['doctor_name'] }}
+                                        </td>
+                                        <td class="small text-muted">{{ appt['booking_time'] }}</td>
+                                        <td class="text-center">
+                                            <span class="badge rounded-pill {% if appt['status'] == 'booked' %}bg-primary{% else %}bg-success{% endif %} px-3 py-2">
+                                                {{ appt['status'] }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-muted small">ရက်ချိန်းမှတ်တမ်း မရှိသေးပါ။</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm p-4" style="border-radius: 20px;">
+                    <h5 class="fw-bold mb-4">အကြံပြုထားသော ဆရာဝန်များ</h5>
+                    {% for doc in doctors[:4] %}
+                    <div class="d-flex align-items-center mb-3 p-3 bg-light rounded-4 border-0 cursor-pointer transition-all" 
+                         style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#doctorDetail{{ doc.id }}">
+                        <img src="{{ doc.profile_image if doc.profile_image else 'https://cdn-icons-png.flaticon.com/512/3774/3774299.png' }}" class="doc-img-circle me-3">
+                        <div class="overflow-hidden">
+                            <span class="fw-bold d-block text-truncate">Dr. {{ doc.full_name }}</span>
+                            <span class="text-muted d-block text-truncate" style="font-size: 0.75rem;">{{ doc.specialty }}</span>
+                        </div>
+                        <i class="fas fa-chevron-right ms-auto text-muted small"></i>
+                    </div>
+                    {% endfor %}
+                    <button class="btn btn-outline-primary btn-sm rounded-pill w-100 mt-2" data-bs-toggle="modal" data-bs-target="#doctorListModal">
+                        ဆရာဝန်အားလုံးကြည့်မည်
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="medicalRecordsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content" style="border-radius: 30px; border: none; background: #f8f9fa;">
+                <div class="modal-header border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-book-medical me-2 text-warning"></i>ဆေးမှတ်တမ်း စာအုပ်
+                    </h5>
+                    <div class="d-flex gap-2">
+                        {% if medical_records %}
+                        <button class="btn btn-sm btn-dark rounded-pill px-3 shadow-sm" onclick="downloadPDF()">
+                            <i class="fas fa-file-pdf me-1"></i> PDF ထုတ်ရန်
+                        </button>
+                        {% endif %}
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="pdf-content">
+                        {% if medical_records %}
+                            {% for record in medical_records %}
+                            <div class="notebook-page shadow-sm">
+                                <div class="page-header d-flex justify-content-between align-items-center">
+                                    <span class="date-badge">{{ record.date_created }}</span>
+                                    <h6 class="fw-bold mb-0">ကုသသူ - Dr. {{ record.doctor_name }}</h6>
+                                </div>
+                                <div class="page-body">
+                                    <div class="mb-4">
+                                        <div class="record-section-title">Diagnosis & Treatment (ရောဂါအမည်နှင့် ဆေးညွှန်း)</div>
+                                        <p class="mb-0 text-dark" style="white-space: pre-wrap; font-size: 0.95rem;">{{ record.summary }}</p>
+                                    </div>
+                                    <div>
+                                        <div class="record-section-title">Doctor's Recommendation (အကြံပြုချက်)</div>
+                                        <div class="recommendation-box">
+                                            {{ record.recommendation }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-folder-open fa-4x text-muted mb-3 opacity-25"></i>
+                                <p class="text-muted">ယခုအချိန်အထိ ဆေးမှတ်တမ်း မရှိသေးပါ။</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="aiChatbotModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Medicare AI Assistant</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="resetChatSystem()" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body">
+    <div id="chat-window" style="height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 15px; margin-bottom: 15px; background: #f9f9f9; display: flex; flex-direction: column;">
+        </div>
+
+    <div id="chat-options" class="mb-3 text-center"></div>
+
+</div>
+      
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="manualChatModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+            <div class="modal-header text-white" style="background-color: #00d2ff;">
+                <h5 class="modal-title fw-bold">Medicare Chat AI</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="resetChatSystem()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" style="background-color: #f8f9fa;">
+    <div id="chatMessages" class="p-3" style="height: 400px; overflow-y: auto;">
+    </div>
+
+    <div id="chatInputArea" class="p-3 bg-white border-top" style="display: none;">
+    <div class="input-group chat-input-wrapper">
+        <input type="text" id="chatInput" class="form-control border-0 bg-transparent py-2 ps-4" 
+               placeholder="ဒီမှာ စာရိုက်ပါ..." style="outline: none;">
+        <button class="btn btn-send-style px-4" type="button" id="sendBtn">
+            <i class="fas fa-paper-plane me-2"></i>ပို့မည်
+        </button>
+    </div>
+</div>
+</div>
+        </div>
+    </div>
+</div>
+
+    <div class="modal fade" id="doctorListModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content" style="border-radius: 25px;">
+                <div class="modal-header border-0 px-4 pt-4">
+                    <h5 class="modal-title fw-bold text-primary">ဆရာဝန်များကို ရှာဖွေပါ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="input-group mb-4 custom-search-box">
+    <span class="input-group-text bg-white border-0 ps-4">
+        <i class="fas fa-search text-primary"></i>
+    </span>
+    <input type="text" id="doctorSearchInput" class="form-control border-0 py-3 ps-2" 
+           placeholder="အမည် သို့မဟုတ် အထူးကုဘာသာရပ်ဖြင့် ရှာရန်..." onkeyup="filterDoctors()">
+</div>
+                    <div id="doctorSearchResults" class="row g-3">
+                        {% for doc in doctors %}
+                        <div class="col-md-6 doctor-item">
+                            <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-light transition-all">
+                                <h6 class="fw-bold doctor-name mb-1">Dr. {{ doc.full_name }}</h6>
+                                <small class="text-primary specialty-text d-block mb-3">{{ doc.specialty }}</small>
+                                <button class="btn btn-sm btn-primary rounded-pill w-100 py-2" 
+                                        data-bs-toggle="modal" data-bs-target="#doctorDetail{{ doc.id }}" 
+                                        data-bs-dismiss="modal">
+                                    အသေးစိတ်ကြည့်မည်
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for doc in doctors %}
+    <div class="modal fade" id="doctorDetail{{ doc.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 30px;">
+                <div class="modal-body p-4 text-center">
+                    <div class="text-end">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    
+                    <img src="{{ doc.profile_image if doc.profile_image else 'https://cdn-icons-png.flaticon.com/512/3774/3774299.png' }}" 
+                         class="doc-profile-large mb-3">
+                    
+                    <h4 class="fw-bold mb-1">Dr. {{ doc.full_name }}</h4>
+                    <span class="badge bg-primary-soft rounded-pill mb-4 px-3 py-2">{{ doc.specialty }}</span>
+                    
+                    <div class="bg-light p-3 rounded-4 mb-4 text-start">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <small class="text-muted d-block text-uppercase" style="font-size: 0.65rem;">ထိုင်သည့်ရက်များ</small>
+                                <strong class="text-dark" style="font-size: 0.85rem;">{{ doc.days }}</strong>
+                            </div>
+                            <div class="col-6 border-start ps-3">
+                                <small class="text-muted d-block text-uppercase" style="font-size: 0.65rem;">အချိန်</small>
+                                <strong class="text-dark" style="font-size: 0.85rem;">{{ doc.time }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form action="/book_appointment" method="POST" id="bookingForm{{ doc.id }}">
+                        <input type="hidden" name="doctor_id" value="{{ doc.id }}">
+                        <div class="mb-4 text-start px-2">
+                            <label class="small fw-bold text-muted mb-2">ပြသလိုသည့် ရက်စွဲရွေးချယ်ပါ</label>
+                            <input type="date" name="booking_time" 
+                                   class="form-control rounded-pill date-input py-3 px-4 border-2" 
+                                   onchange="checkAvailability('{{ doc.id }}', this.value)" required>
+                        </div>
+    
+                        <div id="status_box_{{ doc.id }}" class="p-3 mb-4 text-white d-none" style="border-radius: 15px; font-size: 0.85rem;">
+                            <span id="status_text_{{ doc.id }}"></span>
+                        </div>
+
+                        <button type="submit" id="book_btn_{{ doc.id }}" 
+                                class="btn btn-primary w-100 rounded-pill py-3 book-btn shadow-sm fw-bold" disabled>
+                             <i class="fas fa-calendar-check me-2"></i> ရက်စွဲရွေးချယ်ပေးပါ
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="py-5"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/keywords_db.js') }}"></script>
+<script src="{{ url_for('static', filename='js/intent_engine.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/manual_chat.js') }}"></script>
+    
+    <script>
+        // PDF Export Logic with improved Myanmar font rendering
+        function downloadPDF() {
+            const element = document.getElementById('pdf-content');
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     'Medical_Report_{{ session["full_name"] }}.pdf',
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true,
+                    letterRendering: false,
+                    scrollY: 0,
+                    windowWidth: document.documentElement.offsetWidth
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: 'avoid-all' }
+            };
+
+            // Start the conversion
+            html2pdf().from(element).set(opt).toPdf().get('pdf').save();
+        }
+
+        // Check slots availability logic
+        function checkAvailability(docId, date) {
+            const box = document.getElementById(`status_box_${docId}`);
+            const text = document.getElementById(`status_text_${docId}`);
+            const btn = document.getElementById(`book_btn_${docId}`);
+
+            if (!docId || !date) return;
+
+            // Loading State
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> စစ်ဆေးနေသည်...';
+
+            fetch(`/get_slots/${docId}/${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    box.classList.remove('d-none', 'bg-success', 'bg-warning', 'bg-danger');
+                    
+                    if (data.status === "off") {
+                        box.classList.add('bg-danger', 'd-block');
+                        text.innerHTML = `<i class="fas fa-times-circle me-2"></i> ${data.message}`;
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-ban me-2"></i> ယနေ့ပိတ်ထားပါသည်';
+                    } else {
+                        if (data.remaining > 0) {
+                            box.classList.add('bg-success', 'd-block');
+                            text.innerHTML = `<i class="fas fa-check-circle me-2"></i> နေရာလွတ် ${data.remaining} ခု ကျန်ပါသေးသည်`;
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-calendar-check me-2"></i> ရက်ချိန်းရယူမည်';
+                        } else {
+                            box.classList.add('bg-warning', 'd-block');
+                            text.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> လူနာပြည့်သွားပါပြီ`;
+                            btn.disabled = true;
+                            btn.innerHTML = '<i class="fas fa-users-slash me-2"></i> လူနာပြည့်သွားပါပြီ';
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error("Error checking slots:", err);
+                    box.classList.add('bg-danger', 'd-block');
+                    text.innerText = "စစ်ဆေးရာတွင် အမှားအယွင်းရှိနေပါသည်။";
+                    btn.innerHTML = 'ပြန်လည်ကြိုးစားပါ';
+                });
+        }
+
+        // Doctor Filter Logic
+        function filterDoctors() {
+            let input = document.getElementById('doctorSearchInput').value.toLowerCase();
+            let items = document.querySelectorAll('.doctor-item');
+            
+            items.forEach(item => {
+                let name = item.querySelector('.doctor-name').innerText.toLowerCase();
+                let specialty = item.querySelector('.specialty-text').innerText.toLowerCase();
+                
+                if (name.includes(input) || specialty.includes(input)) {
+                    item.style.display = "block";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        }
+
+        // စာပို့တဲ့ခလုတ် နှိပ်လိုက်တဲ့အခါ
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const userText = input.value.trim();
+
+        if (userText) {
+            // ၁။ လူနာစာကို Chat Box ထဲထည့်
+            appendMessage(userText, 'user');
+            
+            // ၂။ Logic ဖိုင်ထဲက အဖြေကို ယူ
+            const aiReply = processManualChat(userText);
+            
+            // ၃။ AI အဖြေကို ပြန်ပြ
+            setTimeout(() => {
+                appendMessage(aiReply, 'bot');
+            }, 600);
+
+            input.value = "";
+        }
+    }
+
+    function appendMessage(text, sender) {
+        const chatMessages = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = sender === 'user' ? 'text-end mb-3' : 'mb-3';
+        
+        const style = sender === 'user' 
+            ? 'background-color: #00d2ff; color: white; border-radius: 15px 15px 0 15px;' 
+            : 'background-color: #28a745; color: white; border-radius: 15px 15px 15px 0;';
+
+        msgDiv.innerHTML = `<span class="p-2 px-3 d-inline-block shadow-sm" style="${style}">${text}</span>`;
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+        // Reset Chat on Modal close
+        function resetChat() {
+            const chatWindow = document.getElementById('chat-window');
+            if(chatWindow) chatWindow.innerHTML = '';
+            // If you have a specific chatbot initialization, call it here
+            if(typeof initChat === 'function') initChat();
+        }
+
+        // ဆရာဝန်ရှာဖွေရေး Modal ဖွင့်ရန်
+function openDoctorSearch() {
+    var myModal = new bootstrap.Modal(document.getElementById('doctorListModal'));
+    myModal.show();
+}
+
+// AI Tree Chat Modal ဖွင့်ရန်
+function openTreeModal() {
+    var myModal = new bootstrap.Modal(document.getElementById('aiChatbotModal'));
+    myModal.show();
+}
+
+// ဆေးမှတ်တမ်း Modal ဖွင့်ရန်
+function openMedicalRecords() {
+    var myModal = new bootstrap.Modal(document.getElementById('medicalRecordsModal'));
+    myModal.show();
+}
+
+// ၄ ခုမြောက်ကတ်အတွက် ခေါ်တဲ့ Function
+function openManualChat() {
+    // modal အဟောင်း (aiChatbotModal) ကို မဖွင့်ဘဲ အသစ် (manualChatModal) ကို ဖွင့်မယ်
+    var myModal = new bootstrap.Modal(document.getElementById('manualChatModal'));
+    myModal.show();
+}
+    </script>
+</body>
+</html>

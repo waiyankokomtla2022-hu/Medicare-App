@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Medicare</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Pyidaungsu', sans-serif; }
+        .header-section { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 25px; }
+        .token-circle { background: #198754; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: auto; }
+        .table-container { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="header-section d-flex justify-content-between align-items-center shadow-sm">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-check-double me-2"></i>{{ title }}</h2>
+            <p class="mb-0 opacity-75">ကြည့်ရှုစစ်ဆေးပြီးသော လူနာများစာရင်း</p>
+        </div>
+        <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-light rounded-pill px-4">
+            <i class="fas fa-home me-2"></i>Dashboard သို့ပြန်ရန်
+        </a>
+    </div>
+
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 100px;">အစဉ်</th>
+                        <th class="text-start ps-4">လူနာအမည်</th>
+                        <th>ရက်စွဲနှင့် အချိန်</th>
+                        <th>အခြေအနေ</th>
+                        <th>ဆေးမှတ်တမ်း</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in appointments %}
+                    <tr>
+                        <td>
+                            <div class="token-circle">{{ loop.index }}</div>
+                        </td>
+                        <td class="text-start ps-4">
+                            <strong>{{ appt.patient_name }}</strong>
+                        </td>
+                        <td>{{ appt.booking_time }}</td>
+                        <td>
+                            <span class="badge bg-success px-3 py-2 rounded-pill">
+                                <i class="fas fa-check me-1"></i> ပြီးမြောက်
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('view_patient_records', patient_id=appt.user_id) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                <i class="fas fa-file-medical me-1"></i> မှတ်တမ်းကြည့်ရန်
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="py-5 text-muted">
+                            <i class="fas fa-folder-open fa-3x mb-3 d-block"></i>
+                            ကြည့်ရှုပြီးသော လူနာစာရင်း မရှိသေးပါ။
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
