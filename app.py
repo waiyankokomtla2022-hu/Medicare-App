@@ -9,10 +9,10 @@ app = Flask(__name__)
 app.secret_key = 'healthcare_secret_key'
 
 def get_db_connection():
-    conn = sqlite3.connect('Healthcare.db')
+    # timeout=20 ဆိုသည်မှာ database lock ဖြစ်နေလျှင် ၂၀ စက္ကန့် စောင့်ပေးရန် ဖြစ်သည်
+    conn = sqlite3.connect('Healthcare.db', timeout=20) 
     conn.row_factory = sqlite3.Row
     return conn
-
 # --- HOME & AUTH SECTION ---
 
 @app.route('/')
