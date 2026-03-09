@@ -504,7 +504,7 @@ def patient_dashboard():
         ''').fetchall()
         
         doctor_list = []
-        today_date = datetime.date.today().strftime('%Y-%m-%d')
+        today_date = dt.date.today().strftime('%Y-%m-%d')
         for doc in doctors_db:
             booked_today = conn.execute('SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND date(booking_time) = ?', (doc['id'], today_date)).fetchone()[0]
             doctor_list.append({
@@ -585,7 +585,7 @@ def get_ai_doctors(dept):
 def get_slots(doc_id, date):
     try:
         conn = get_db_connection()
-        selected_date = datetime.datetime.strptime(date, '%Y-%m-%d')
+        selected_date = datetime.strptime(date, '%Y-%m-%d')
         day_short = selected_date.strftime('%a')
         
         doctor = conn.execute('SELECT days, remaining FROM doctors WHERE id = ?', (doc_id,)).fetchone()
