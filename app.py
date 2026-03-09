@@ -1,3 +1,5 @@
+import datetime
+import pytz
 from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
 import sqlite3
 import datetime
@@ -625,33 +627,34 @@ def cancel_appointment(id):
 def book_appointment():
     if 'role' in session and session['role'] == 'patient':
         doctor_id = request.form.get('doctor_id')
-        booking_date = request.form.get('booking_time') # ဥပမာ - "2026-02-09"
+        booking_date = request.form.get('booking_time') 
         user_id = session['user_id']
         
         conn = get_db_connection()
-        
-        # ၁။ ဆရာဝန်ရဲ့ အချိန်အပိုင်းအခြားကို DB ကနေ အရင်ယူပါ
         doc_info = conn.execute('SELECT time FROM doctors WHERE id = ?', (doctor_id,)).fetchone()
         
         if doc_info and doc_info['time']:
             try:
-                # doc_info['time'] က "09:00 AM - 12:00 PM" ပုံစံဖြစ်တယ်လို့ ယူဆပါတယ်
                 time_range = doc_info['time']
-                end_time_str = time_range.split('-')[1].strip() # "12:00 PM" ကို ဖြတ်ယူပါ
+                end_time_str = time_range.split('-')[1].strip() 
                 
-                # စာသားကို အချိန် format ပြောင်းပါ
-                end_time = datetime.datetime.strptime(end_time_str, "%I:%M %p").time()
+                # ၁။ မြန်မာစံတော်ချိန်ကို သတ်မှတ်ပြီး လက်ရှိအချိန်ကို ယူပါ
+                tz_MM = pytz.timezone('Asia/Yangon')
+                now_MM = datetime.now(tz_MM) # Render ပေါ်မှာလည်း မြန်မာစံတော်ချိန်အတိုင်း ရစေမှာပါ
                 
-                # လက်ရှိ မြန်မာစံတော်ချိန်ကို ယူပါ
-                now_time = datetime.datetime.now().time()
-                today_str = datetime.date.today().strftime('%Y-%m-%d')
+                # ၂။ နှိုင်းယှဉ်မည့် အချိန်နှစ်ခုကို format ပြင်ပါ
+                end_time = datetime.strptime(end_time_str, "%I:%M %p").time()
+                now_time = now_MM.time() # လက်ရှိ မြန်မာစံတော်ချိန်
+                today_str = now_MM.strftime('%Y-%m-%d') # လက်ရှိ မြန်မာ့ရက်စွဲ
 
-                # အကယ်၍ လူနာရွေးတဲ့ရက်က "ဒီနေ့" ဖြစ်နေပြီး၊ လက်ရှိအချိန်က ဆရာဝန်ကြည့်ချိန်ထက် ကျော်နေရင်
+                # ၃။ အကယ်၍ လူနာရွေးတဲ့ရက်က "ဒီနေ့" ဖြစ်နေပြီး၊ လက်ရှိအချိန်က ဆရာဝန်ကြည့်ချိန်ထက် ကျော်နေရင်
                 if booking_date == today_str and now_time > end_time:
                     conn.close()
                     return f"<script>alert('စိတ်မရှိပါနဲ့၊ ယနေ့အတွက် ဆရာဝန်ပြသချိန် ({time_range}) ကျော်လွန်သွားပြီဖြစ်သောကြောင့် Booking ယူ၍မရတော့ပါ။'); window.history.back();</script>"
             except Exception as e:
-                print(f"Time parsing error: {e}") # Format မကိုက်ရင် error မတက်အောင် logic ဆက်သွားပါ
+                print(f"Time parsing error: {e}")
+
+        # ... (ကျန်တဲ့ Already booked နဲ့ Limit check code များသည် အရင်အတိုင်း ထားနိုင်ပါသည်) ... # Format မကိုက်ရင် error မတက်အောင် logic ဆက်သွားပါ
 
         # ၂။ ကျန်တဲ့ ပုံမှန် စစ်ဆေးမှုများ (Already booked / Limit check)
         already_booked = conn.execute('''
@@ -682,7 +685,6 @@ def book_appointment():
         flash("Booking Successful!", "success")
         return redirect(url_for('patient_dashboard'))
     return redirect(url_for('login_page'))
-
 @app.route('/debug/reset_appointments')
 def reset_appointments():
     conn = get_db_connection()
