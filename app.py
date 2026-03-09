@@ -1,18 +1,17 @@
-import datetime as dt # ဤစာကြောင်းကို ပြောင်းလိုက်ပါ
-import pytz
 from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
 import sqlite3
+import datetime
 import re
-from datetime import datetime # ဤစာကြောင်း ပါရပါမည်
+
 
 app = Flask(__name__)
 app.secret_key = 'healthcare_secret_key'
 
 def get_db_connection():
-    # timeout=20 ဆိုသည်မှာ database lock ဖြစ်နေလျှင် ၂၀ စက္ကန့် စောင့်ပေးရန် ဖြစ်သည်
-    conn = sqlite3.connect('Healthcare.db', timeout=20) 
+    conn = sqlite3.connect('Healthcare.db')
     conn.row_factory = sqlite3.Row
     return conn
+
 # --- HOME & AUTH SECTION ---
 
 @app.route('/')
@@ -504,7 +503,7 @@ def patient_dashboard():
         ''').fetchall()
         
         doctor_list = []
-        today_date = dt.date.today().strftime('%Y-%m-%d')
+        today_date = datetime.date.today().strftime('%Y-%m-%d')
         for doc in doctors_db:
             booked_today = conn.execute('SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND date(booking_time) = ?', (doc['id'], today_date)).fetchone()[0]
             doctor_list.append({
@@ -585,7 +584,7 @@ def get_ai_doctors(dept):
 def get_slots(doc_id, date):
     try:
         conn = get_db_connection()
-        selected_date = datetime.strptime(date, '%Y-%m-%d')
+        selected_date = datetime.datetime.strptime(date, '%Y-%m-%d')
         day_short = selected_date.strftime('%a')
         
         doctor = conn.execute('SELECT days, remaining FROM doctors WHERE id = ?', (doc_id,)).fetchone()
@@ -626,38 +625,35 @@ def cancel_appointment(id):
 def book_appointment():
     if 'role' in session and session['role'] == 'patient':
         doctor_id = request.form.get('doctor_id')
-        booking_date = request.form.get('booking_time') 
+        booking_date = request.form.get('booking_time') # ဥပမာ - "2026-02-09"
         user_id = session['user_id']
         
         conn = get_db_connection()
-        doc_info = conn.execute('SELECT time, remaining FROM doctors WHERE id = ?', (doctor_id,)).fetchone()
+        
+        # ၁။ ဆရာဝန်ရဲ့ အချိန်အပိုင်းအခြားကို DB ကနေ အရင်ယူပါ
+        doc_info = conn.execute('SELECT time FROM doctors WHERE id = ?', (doctor_id,)).fetchone()
         
         if doc_info and doc_info['time']:
             try:
-                # ၁။ မြန်မာစံတော်ချိန် (Asia/Yangon) ကို ယူပါ
-                tz_MM = pytz.timezone('Asia/Yangon')
-                now_MM = datetime.now(tz_MM)
-                today_str = now_MM.strftime('%Y-%m-%d')
-                now_time = now_MM.time()
-
-                # ၂။ ဆရာဝန် ပိတ်ချိန်ကို ခွဲထုတ်ပါ (ဥပမာ "09:00 AM - 05:00 PM")
+                # doc_info['time'] က "09:00 AM - 12:00 PM" ပုံစံဖြစ်တယ်လို့ ယူဆပါတယ်
                 time_range = doc_info['time']
-                end_time_str = time_range.split('-')[1].strip() # "05:00 PM"
+                end_time_str = time_range.split('-')[1].strip() # "12:00 PM" ကို ဖြတ်ယူပါ
                 
-                # ၃။ စာသားကို အချိန် Format (Time Object) ပြောင်းပါ
-                end_time = datetime.strptime(end_time_str, "%I:%M %p").time()
+                # စာသားကို အချိန် format ပြောင်းပါ
+                end_time = datetime.datetime.strptime(end_time_str, "%I:%M %p").time()
+                
+                # လက်ရှိ မြန်မာစံတော်ချိန်ကို ယူပါ
+                now_time = datetime.datetime.now().time()
+                today_str = datetime.date.today().strftime('%Y-%m-%d')
 
-                # ၄။ ရက်စွဲက ဒီနေ့ဖြစ်ပြီး၊ လက်ရှိအချိန်က ပိတ်ချိန်ထက် ကျော်နေရင် တားပါ
+                # အကယ်၍ လူနာရွေးတဲ့ရက်က "ဒီနေ့" ဖြစ်နေပြီး၊ လက်ရှိအချိန်က ဆရာဝန်ကြည့်ချိန်ထက် ကျော်နေရင်
                 if booking_date == today_str and now_time > end_time:
                     conn.close()
-                    return f"<script>alert('ယနေ့အတွက် ဆရာဝန်ပြသချိန် ({time_range}) ကျော်လွန်သွားပါပြီ။'); window.history.back();</script>"
-            
+                    return f"<script>alert('စိတ်မရှိပါနဲ့၊ ယနေ့အတွက် ဆရာဝန်ပြသချိန် ({time_range}) ကျော်လွန်သွားပြီဖြစ်သောကြောင့် Booking ယူ၍မရတော့ပါ။'); window.history.back();</script>"
             except Exception as e:
-                print(f"Time Check Error: {e}")
+                print(f"Time parsing error: {e}") # Format မကိုက်ရင် error မတက်အောင် logic ဆက်သွားပါ
 
-        # --- ကျန်တဲ့ စစ်ဆေးမှုများ (Already booked / Limit check) ---
-        # ... (သင်ရေးထားတဲ့ အရင် code အတိုင်း ဆက်ရေးပါ) ...
-        # --- ၂။ ကျန်တဲ့ ပုံမှန် စစ်ဆေးမှုများ (Already booked / Limit check) ---
+        # ၂။ ကျန်တဲ့ ပုံမှန် စစ်ဆေးမှုများ (Already booked / Limit check)
         already_booked = conn.execute('''
             SELECT id FROM appointments 
             WHERE user_id = ? AND doctor_id = ? AND date(booking_time) = date(?) AND status = 'booked'
@@ -667,17 +663,18 @@ def book_appointment():
             conn.close()
             return "<script>alert('သင့်မှာ ဒီဆရာဝန်နဲ့ ရက်ချိန်းတစ်ခု ရှိနေပြီးသား ဖြစ်ပါတယ်။'); window.history.back();</script>"
 
-        max_limit = doc_info['remaining'] if doc_info else 25
+        limit_data = conn.execute('SELECT remaining FROM doctors WHERE id = ?', (doctor_id,)).fetchone()
+        max_limit = limit_data['remaining'] if limit_data else 25
+
         booked_on_date = conn.execute('''
             SELECT COUNT(*) FROM appointments 
-            WHERE doctor_id = ? AND date(booking_time) = date(?) AND status != 'cancelled'
+            WHERE doctor_id = ? AND date(booking_time) = date(?)
         ''', (doctor_id, booking_date)).fetchone()[0]
         
         if booked_on_date >= max_limit:
             conn.close()
-            return "<script>alert('ယနေ့အတွက် လူနာဦးရေ ပြည့်သွားပါပြီ။'); window.history.back();</script>"
+            return "<script>alert('Sorry, this date is fully booked.'); window.history.back();</script>"
 
-        # --- ၃။ အားလုံးအိုကေမှ Database ထဲ သိမ်းခြင်း ---
         conn.execute('INSERT INTO appointments (user_id, doctor_id, booking_time, status) VALUES (?, ?, ?, "booked")',
                      (user_id, doctor_id, booking_date))
         conn.commit()
@@ -685,6 +682,7 @@ def book_appointment():
         flash("Booking Successful!", "success")
         return redirect(url_for('patient_dashboard'))
     return redirect(url_for('login_page'))
+
 @app.route('/debug/reset_appointments')
 def reset_appointments():
     conn = get_db_connection()
