@@ -626,34 +626,37 @@ def cancel_appointment(id):
 def book_appointment():
     if 'role' in session and session['role'] == 'patient':
         doctor_id = request.form.get('doctor_id')
-        booking_date = request.form.get('booking_time') # ဥပမာ - '2026-03-09'
+        booking_date = request.form.get('booking_time') 
         user_id = session['user_id']
         
         conn = get_db_connection()
         doc_info = conn.execute('SELECT time, remaining FROM doctors WHERE id = ?', (doctor_id,)).fetchone()
         
-        # --- အချိန်ကျော်မကျော် စစ်ဆေးသည့်အပိုင်း (အသစ်) ---
         if doc_info and doc_info['time']:
             try:
-                time_range = doc_info['time'] # ဥပမာ - "09:00 AM - 05:00 PM"
-                end_time_str = time_range.split('-')[1].strip() # "05:00 PM" ကို ယူသည်
-                
-                # မြန်မာစံတော်ချိန် သတ်မှတ်ခြင်း
+                # ၁။ မြန်မာစံတော်ချိန် (Asia/Yangon) ကို ယူပါ
                 tz_MM = pytz.timezone('Asia/Yangon')
                 now_MM = datetime.now(tz_MM)
-                
-                # စာသားကို အချိန် format ပြောင်းခြင်း
-                end_time = datetime.strptime(end_time_str, "%I:%M %p").time()
-                now_time = now_MM.time()
                 today_str = now_MM.strftime('%Y-%m-%d')
+                now_time = now_MM.time()
 
-                # အကယ်၍ ရက်စွဲက ဒီနေ့ဖြစ်ပြီး၊ အချိန်က ဆရာဝန်ထိုင်ချိန် ကျော်နေလျှင်
+                # ၂။ ဆရာဝန် ပိတ်ချိန်ကို ခွဲထုတ်ပါ (ဥပမာ "09:00 AM - 05:00 PM")
+                time_range = doc_info['time']
+                end_time_str = time_range.split('-')[1].strip() # "05:00 PM"
+                
+                # ၃။ စာသားကို အချိန် Format (Time Object) ပြောင်းပါ
+                end_time = datetime.strptime(end_time_str, "%I:%M %p").time()
+
+                # ၄။ ရက်စွဲက ဒီနေ့ဖြစ်ပြီး၊ လက်ရှိအချိန်က ပိတ်ချိန်ထက် ကျော်နေရင် တားပါ
                 if booking_date == today_str and now_time > end_time:
                     conn.close()
-                    return f"<script>alert('စိတ်မရှိပါနဲ့၊ ယနေ့အတွက် ဆရာဝန်ပြသချိန် ({time_range}) ကျော်လွန်သွားပြီဖြစ်သောကြောင့် Booking ယူ၍မရတော့ပါ။'); window.history.back();</script>"
+                    return f"<script>alert('ယနေ့အတွက် ဆရာဝန်ပြသချိန် ({time_range}) ကျော်လွန်သွားပါပြီ။'); window.history.back();</script>"
+            
             except Exception as e:
-                print(f"Time Check Error: {e}") # Log ထဲမှာ error ပြရန်
+                print(f"Time Check Error: {e}")
 
+        # --- ကျန်တဲ့ စစ်ဆေးမှုများ (Already booked / Limit check) ---
+        # ... (သင်ရေးထားတဲ့ အရင် code အတိုင်း ဆက်ရေးပါ) ...
         # --- ၂။ ကျန်တဲ့ ပုံမှန် စစ်ဆေးမှုများ (Already booked / Limit check) ---
         already_booked = conn.execute('''
             SELECT id FROM appointments 
