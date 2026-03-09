@@ -1,10 +1,9 @@
-import datetime
+import datetime as dt # ဤစာကြောင်းကို ပြောင်းလိုက်ပါ
 import pytz
 from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
 import sqlite3
-import datetime
 import re
-
+from datetime import datetime # ဤစာကြောင်း ပါရပါမည်
 
 app = Flask(__name__)
 app.secret_key = 'healthcare_secret_key'
@@ -633,26 +632,12 @@ def book_appointment():
         conn = get_db_connection()
         doc_info = conn.execute('SELECT time FROM doctors WHERE id = ?', (doctor_id,)).fetchone()
         
-        if doc_info and doc_info['time']:
-            try:
-                time_range = doc_info['time']
-                end_time_str = time_range.split('-')[1].strip() 
-                
-                # ၁။ မြန်မာစံတော်ချိန်ကို သတ်မှတ်ပြီး လက်ရှိအချိန်ကို ယူပါ
-                tz_MM = pytz.timezone('Asia/Yangon')
-                now_MM = datetime.now(tz_MM) # Render ပေါ်မှာလည်း မြန်မာစံတော်ချိန်အတိုင်း ရစေမှာပါ
-                
-                # ၂။ နှိုင်းယှဉ်မည့် အချိန်နှစ်ခုကို format ပြင်ပါ
-                end_time = datetime.strptime(end_time_str, "%I:%M %p").time()
-                now_time = now_MM.time() # လက်ရှိ မြန်မာစံတော်ချိန်
-                today_str = now_MM.strftime('%Y-%m-%d') # လက်ရှိ မြန်မာ့ရက်စွဲ
-
-                # ၃။ အကယ်၍ လူနာရွေးတဲ့ရက်က "ဒီနေ့" ဖြစ်နေပြီး၊ လက်ရှိအချိန်က ဆရာဝန်ကြည့်ချိန်ထက် ကျော်နေရင်
-                if booking_date == today_str and now_time > end_time:
-                    conn.close()
-                    return f"<script>alert('စိတ်မရှိပါနဲ့၊ ယနေ့အတွက် ဆရာဝန်ပြသချိန် ({time_range}) ကျော်လွန်သွားပြီဖြစ်သောကြောင့် Booking ယူ၍မရတော့ပါ။'); window.history.back();</script>"
-            except Exception as e:
-                print(f"Time parsing error: {e}")
+        import datetime as dt # ဤစာကြောင်းကို ပြောင်းလိုက်ပါ
+import pytz
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
+import sqlite3
+import re
+from datetime import datetime # ဤစာကြောင်း ပါရပါမည်
 
         # ... (ကျန်တဲ့ Already booked နဲ့ Limit check code များသည် အရင်အတိုင်း ထားနိုင်ပါသည်) ... # Format မကိုက်ရင် error မတက်အောင် logic ဆက်သွားပါ
 
